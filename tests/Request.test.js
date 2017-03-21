@@ -29,58 +29,117 @@ describe('Request', function() {
 
 
    describe('validateQueryParams', function() {
-      var validationRules = { foo: { required: true, pattern: /^isFoo.*$/ }, bar: { required: true }, baz: { required: false } };
+      var sharedRules;
 
-      it('marks as invalid params that are required and not supplied', function() {
+      sharedRules = {
+         foo: { required: true, pattern: /^isFoo.*$/ },
+         bar: { required: true },
+         baz: { required: false },
+      };
+
+      function runValidTest(rules, qp) {
          var req, validate;
 
-         req = new Request({ queryStringParameters: { foo: 'isFoo' } });
-         validate = req.validateQueryParams(validationRules);
-         expect(validate).to.eql({ isValid: false, msg: 'Invalid required fields: bar' });
+         req = new Request({ queryStringParameters: qp });
+         validate = req.validateQueryParams(rules);
+         expect(validate).to.eql({ isValid: true });
+      }
 
-         req = new Request({});
-         validate = req.validateQueryParams(validationRules);
-         expect(validate).to.eql({ isValid: false, msg: 'Invalid required fields: foo, bar' });
+      function runInvalidTest(rules, qp, invalidFields) {
+         var req, validate;
+
+         req = new Request({ queryStringParameters: qp });
+         validate = req.validateQueryParams(rules);
+         expect(validate).to.eql({ isValid: false, msg: 'Invalid fields: ' + invalidFields });
+      }
+
+      it('marks as invalid params that are required and not supplied', function() {
+         runInvalidTest(sharedRules, { foo: 'isFoo' }, 'bar');
+         runInvalidTest(sharedRules, {}, 'foo, bar');
       });
 
       it('marks as invalid params that are required and supplied, but empty', function() {
-         var req, validate;
-
-         req = new Request({ queryStringParameters: { foo: 'isFoo', bar: '' } });
-         validate = req.validateQueryParams(validationRules);
-         expect(validate).to.eql({ isValid: false, msg: 'Invalid required fields: bar' });
-
-         req = new Request({ queryStringParameters: { foo: '', bar: 'something' } });
-         validate = req.validateQueryParams(validationRules);
-         expect(validate).to.eql({ isValid: false, msg: 'Invalid required fields: foo' });
-
-         req = new Request({ queryStringParameters: { foo: '', bar: '' } });
-         validate = req.validateQueryParams(validationRules);
-         expect(validate).to.eql({ isValid: false, msg: 'Invalid required fields: foo, bar' });
+         runInvalidTest(sharedRules, { foo: 'isFoo', bar: '' }, 'bar');
+         runInvalidTest(sharedRules, { foo: '', bar: 'something' }, 'foo');
+         runInvalidTest(sharedRules, { foo: '', bar: '' }, 'foo, bar');
       });
 
       it('marks as invalid params that are required and fail their regex rule', function() {
-         var req, validate;
-
-         req = new Request({ queryStringParameters: { foo: 'something', bar: 'something' } });
-         validate = req.validateQueryParams(validationRules);
-         expect(validate).to.eql({ isValid: false, msg: 'Invalid required fields: foo' });
+         runInvalidTest(sharedRules, { foo: 'something', bar: 'something' }, 'foo');
       });
 
-      it('returns valid response if all params pass validation', function() {
-         var req, validate;
+      it('marks as invalid params that are required and fail min and max rules', function() {
+         var rules;
 
-         req = new Request({ queryStringParameters: { foo: 'isFoo', bar: 'something' } });
-         validate = req.validateQueryParams(validationRules);
-         expect(validate).to.eql({ isValid: true, msg: undefined });
+         rules = JSON.parse(JSON.stringify(sharedRules));
+         rules.foo = { required: true, min: 4, max: 8 };
+         rules.bar = { required: true, min: -4, max: 0 };
 
-         req = new Request({ queryStringParameters: { foo: 'isFoo', bar: 'something', baz: 'something' } });
-         validate = req.validateQueryParams(validationRules);
-         expect(validate).to.eql({ isValid: true, msg: undefined });
+         // foo is not a number
+         runInvalidTest(rules, { foo: 'something', bar: '-2' }, 'foo');
+         // foo is below range
+         runInvalidTest(rules, { foo: '3', bar: '-2' }, 'foo');
+         // foo is above range
+         runInvalidTest(rules, { foo: '9', bar: '-2' }, 'foo');
+         // foo has decimal separators
+         runInvalidTest(rules, { foo: '99.9', bar: '-2' }, 'foo');
+         runInvalidTest(rules, { foo: '8.0001', bar: '-2' }, 'foo');
+         runInvalidTest(rules, { foo: '3.9999', bar: '-2' }, 'foo');
 
-         req = new Request({ queryStringParameters: { foo: 'isFooBar', bar: 'something', baz: 'something' } });
-         validate = req.validateQueryParams(validationRules);
-         expect(validate).to.eql({ isValid: true, msg: undefined });
+         // bar is not a number
+         runInvalidTest(rules, { foo: '4', bar: 'something' }, 'bar');
+         // bar is below range
+         runInvalidTest(rules, { foo: '4', bar: '-5' }, 'bar');
+         // bar is above range
+         runInvalidTest(rules, { foo: '4', bar: '1' }, 'bar');
+         // bar has decimal separators
+         runInvalidTest(rules, { foo: '4', bar: '0.00001' }, 'bar');
+         runInvalidTest(rules, { foo: '4', bar: '-4.00001' }, 'bar');
+
+         // both foo and bar are not numbers
+         runInvalidTest(rules, { foo: 'something', bar: 'something' }, 'foo, bar');
+         // both foo and bar are out of range
+         runInvalidTest(rules, { foo: '3', bar: '1' }, 'foo, bar');
+
+
+         // thousands separators are treated as NaN
+         rules = JSON.parse(JSON.stringify(sharedRules));
+         rules.foo = { required: true, min: 0, max: 10000 };
+         rules.bar = { required: true, min: -10000, max: 0 };
+
+         runInvalidTest(rules, { foo: '9,999', bar: '-2' }, 'foo');
+         runInvalidTest(rules, { foo: '9,999.99', bar: '-2' }, 'foo');
+         runInvalidTest(rules, { foo: '2', bar: '-2,123' }, 'bar');
+         runInvalidTest(rules, { foo: '2.99', bar: '-2,123.01' }, 'bar');
+         runInvalidTest(rules, { foo: '1,234', bar: '-2,123.01' }, 'foo, bar');
+      });
+
+      it('returns valid response if all params pass validation - required and patterns', function() {
+         runValidTest(sharedRules, { foo: 'isFoo', bar: 'something' });
+         runValidTest(sharedRules, { foo: 'isFoo', bar: 'something', baz: 'something' });
+         runValidTest(sharedRules, { foo: 'isFooBar', bar: 'something', baz: 'something' });
+      });
+
+      it('returns valid response if all params pass validation - min and max', function() {
+         var rules;
+
+         rules = JSON.parse(JSON.stringify(sharedRules));
+         rules.foo = { required: true, min: 4, max: 8 };
+         rules.bar = { required: true, min: -4, max: 0 };
+
+         runValidTest(rules, { foo: '4', bar: '-4' });
+         runValidTest(rules, { foo: '5', bar: '-4' });
+         runValidTest(rules, { foo: '6', bar: '-4' });
+         runValidTest(rules, { foo: '7', bar: '-4' });
+         runValidTest(rules, { foo: '8', bar: '-4' });
+         runValidTest(rules, { foo: '8', bar: '-3' });
+         runValidTest(rules, { foo: '8', bar: '-2' });
+         runValidTest(rules, { foo: '8', bar: '-1' });
+         runValidTest(rules, { foo: '8', bar: '0' });
+
+         // some decimals
+         runValidTest(rules, { foo: '4.000001', bar: '-3.99' });
+         runValidTest(rules, { foo: '7.99', bar: '-0.01' });
       });
 
    });

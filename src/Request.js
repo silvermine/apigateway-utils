@@ -23,27 +23,43 @@ module.exports = Class.extend({
    },
 
    validateQueryParams: function(rules) {
-      var invalidRequiredFields = [],
-          isValid = true,
-          msg;
+      var invalidFields = [];
 
       _.each(rules, function(rule, name) {
-         if (this.hasQueryParam(name) && rule.pattern && !rule.pattern.test(this.query(name))) {
+         var isValid = true,
+             has = this.hasQueryParam(name),
+             val = this.query(name),
+             asNumber = Number(val);
+
+         if (has && !_.isUndefined(rule.pattern) && !rule.pattern.test(val)) {
+            this._query[name] = undefined;
+            isValid = false;
+         }
+
+         if (has && !_.isUndefined(rule.min) && (_.isNaN(asNumber) || asNumber < rule.min)) {
+            this._query[name] = undefined;
+            isValid = false;
+         }
+
+         if (has && !_.isUndefined(rule.max) && (_.isNaN(asNumber) || asNumber > rule.max)) {
             this._query[name] = undefined;
             isValid = false;
          }
 
          if (rule.required && (!this.hasQueryParam(name) || _.isEmpty(this.query(name)))) {
             isValid = false;
-            invalidRequiredFields.push(name);
+         }
+
+         if (isValid === false) {
+            invalidFields.push(name);
          }
       }.bind(this));
 
-      if (!_.isEmpty(invalidRequiredFields)) {
-         msg = 'Invalid required fields: ' + invalidRequiredFields.join(', ');
+      if (!_.isEmpty(invalidFields)) {
+         return { isValid: false, msg: 'Invalid fields: ' + invalidFields.join(', ') };
       }
 
-      return { isValid: isValid, msg: msg };
+      return { isValid: true };
    },
 
    hasPathParam: function(k) {
