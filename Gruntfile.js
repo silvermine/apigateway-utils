@@ -7,7 +7,7 @@ module.exports = function(grunt) {
    config = {
       js: {
          all: [ 'Gruntfile.js', '**/*.js', '!**/node_modules/**/*', '!**/coverage/**/*' ],
-      }
+      },
    };
 
    grunt.initConfig({
