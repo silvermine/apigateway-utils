@@ -16,7 +16,7 @@ module.exports = RB.extend({
       builtOn.push(process.env.AWS_REGION);
       builtOn.push(process.env.AWS_LAMBDA_FUNCTION_NAME);
       builtOn.push(process.env.AWS_LAMBDA_FUNCTION_VERSION);
-      builtOn.push(process.env.DEPLOYED_CODE_VERSION);
+      builtOn.push(process.env.CODE_VERSION);
 
       this.header('X-Built-On', builtOn.join(':'));
       this.header('X-Page-Built', now.toUTCString());
