@@ -2,7 +2,7 @@
 
 var ResponseBuilder = require('./ResponseBuilder');
 
-module.exports = function(promiseReturningHandlerFn, request, cb) {
+module.exports = function(promiseReturningHandlerFn, request, cb, CustomRespBuilderClass) {
    promiseReturningHandlerFn()
       .then(function(respBuilder) {
          // eslint-disable-next-line no-console
@@ -10,7 +10,8 @@ module.exports = function(promiseReturningHandlerFn, request, cb) {
          cb(undefined, respBuilder.toResponse(request));
       })
       .catch(function(err) {
-         var respBuilder = new ResponseBuilder(request).error();
+         var RB = CustomRespBuilderClass || ResponseBuilder,
+             respBuilder = new RB().error();
 
          // eslint-disable-next-line no-console
          console.log('ERROR:', err, err.stack);
