@@ -91,7 +91,11 @@ module.exports = Class.extend({
    },
 
    header: function(k) {
-      return this._headers[k];
+      var userKey = (k || '').toLowerCase();
+
+      return _.find(this._headers, function(val, key) {
+         return key.toLowerCase() === userKey;
+      });
    },
 
    path: function() {

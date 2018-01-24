@@ -291,6 +291,24 @@ describe('Request', function() {
          expect(req.header('baz')).to.be(undefined);
       });
 
+      it('ignores case when looking up values', function() {
+         var req = new Request({ headers: { foo: 'abc', bar: 'def', emptyString: '' } });
+
+         expect(req.header('FOO')).to.eql('abc');
+         expect(req.header('Bar')).to.eql('def');
+         expect(req.header('EmptyString')).to.eql('');
+         expect(req.header('bAz')).to.be(undefined);
+      });
+
+      it('returns undefined when no (or falsy) key is provided', function() {
+         var req = new Request({ headers: { foo: 'abc', bar: 'def', emptyString: '' } });
+
+         expect(req.header()).to.be(undefined);
+         expect(req.header(null)).to.be(undefined);
+         expect(req.header(false)).to.be(undefined);
+         expect(req.header(0)).to.be(undefined);
+      });
+
    });
 
 
