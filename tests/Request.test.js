@@ -350,4 +350,43 @@ describe('Request', function() {
 
    });
 
+
+   describe('_parseBody and parsedBody', function() {
+      var body = { foo: 'bar' };
+
+      function runTest(evt, expectedOutput) {
+         var req = new Request(evt);
+
+         expect(req._parseBody()).to.eql(expectedOutput);
+         expect(req.parsedBody()).to.eql(expectedOutput);
+         // call it a second time to test the implicit `else`
+         expect(req.parsedBody()).to.eql(expectedOutput);
+      }
+
+      it('parses a JSON body correctly', function() {
+         runTest({ body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } }, body);
+      });
+
+      it('returns null when there are no headers', function() {
+         runTest({ body: JSON.stringify(body) }, null);
+      });
+
+      it('returns null when there is not a Content-Type header', function() {
+         runTest({ body: JSON.stringify(body), headers: {} }, null);
+      });
+
+      it('ignores case on the Content-Type header', function() {
+         runTest({ body: JSON.stringify(body), headers: { 'content-type': 'application/json' } }, body);
+      });
+
+      it('returns null when there is a non-JSON content type', function() {
+         runTest({ body: JSON.stringify(body), headers: { 'content-type': 'foo/bar' } }, null);
+      });
+
+      it('returns null when the body is not valid JSON', function() {
+         runTest({ body: '{foo:bar}', headers: { 'content-type': 'application/json' } }, null);
+      });
+
+   });
+
 });

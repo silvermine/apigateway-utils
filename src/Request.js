@@ -14,6 +14,18 @@ module.exports = Class.extend({
       this._headers = this._event.headers || {};
    },
 
+   _parseBody: function() {
+      if (this.header('Content-Type') === 'application/json') {
+         try {
+            return JSON.parse(this._event.body);
+         } catch(err) {
+            return null;
+         }
+      }
+
+      return null;
+   },
+
    getEvent: function() {
       return this._event;
    },
@@ -84,6 +96,14 @@ module.exports = Class.extend({
 
    body: function() {
       return this._event.body;
+   },
+
+   parsedBody: function() {
+      if (_.isUndefined(this._parsedBody)) {
+         this._parsedBody = this._parseBody();
+      }
+
+      return this._parsedBody;
    },
 
    isBase64Encoded: function() {
