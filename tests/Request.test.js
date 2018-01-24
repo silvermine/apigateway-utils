@@ -291,6 +291,24 @@ describe('Request', function() {
          expect(req.header('baz')).to.be(undefined);
       });
 
+      it('ignores case when looking up values', function() {
+         var req = new Request({ headers: { foo: 'abc', bar: 'def', emptyString: '' } });
+
+         expect(req.header('FOO')).to.eql('abc');
+         expect(req.header('Bar')).to.eql('def');
+         expect(req.header('EmptyString')).to.eql('');
+         expect(req.header('bAz')).to.be(undefined);
+      });
+
+      it('returns undefined when no (or falsy) key is provided', function() {
+         var req = new Request({ headers: { foo: 'abc', bar: 'def', emptyString: '' } });
+
+         expect(req.header()).to.be(undefined);
+         expect(req.header(null)).to.be(undefined);
+         expect(req.header(false)).to.be(undefined);
+         expect(req.header(0)).to.be(undefined);
+      });
+
    });
 
 
@@ -328,6 +346,45 @@ describe('Request', function() {
                expect(req.started()).to.be.greaterThan(start - 1);
                expect(req.started()).to.be.lessThan(start + 100);
             });
+      });
+
+   });
+
+
+   describe('_parseBody and parsedBody', function() {
+      var body = { foo: 'bar' };
+
+      function runTest(evt, expectedOutput) {
+         var req = new Request(evt);
+
+         expect(req._parseBody()).to.eql(expectedOutput);
+         expect(req.parsedBody()).to.eql(expectedOutput);
+         // call it a second time to test the implicit `else`
+         expect(req.parsedBody()).to.eql(expectedOutput);
+      }
+
+      it('parses a JSON body correctly', function() {
+         runTest({ body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } }, body);
+      });
+
+      it('returns null when there are no headers', function() {
+         runTest({ body: JSON.stringify(body) }, null);
+      });
+
+      it('returns null when there is not a Content-Type header', function() {
+         runTest({ body: JSON.stringify(body), headers: {} }, null);
+      });
+
+      it('ignores case on the Content-Type header', function() {
+         runTest({ body: JSON.stringify(body), headers: { 'content-type': 'application/json' } }, body);
+      });
+
+      it('returns null when there is a non-JSON content type', function() {
+         runTest({ body: JSON.stringify(body), headers: { 'content-type': 'foo/bar' } }, null);
+      });
+
+      it('returns null when the body is not valid JSON', function() {
+         runTest({ body: '{foo:bar}', headers: { 'content-type': 'application/json' } }, null);
       });
 
    });
