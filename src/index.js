@@ -9,6 +9,7 @@ EXPORTABLE_RESOURCES = {
    Responsebuilder: './ResponseBuilder',
    SilvermineResponseBuilder: './SilvermineResponseBuilder',
    responseBuilderHandler: './responseBuilderHandler',
+   JWTValidator: './JWTValidator',
 };
 
 module.exports = {
