@@ -1,6 +1,7 @@
 'use strict';
 
 var _ = require('underscore'),
+    APIError = require('./APIError'),
     Class = require('class.extend'),
     CONTENT_TYPE_JSON = 'application/json;charset=UTF-8',
     CONTENT_TYPE_JSONP = 'text/javascript;charset=UTF-8',
@@ -15,6 +16,7 @@ module.exports = Class.extend({
       this._body = {};
       this._isJSONPSupported = false;
       this._cacheDurationSeconds = 0;
+      this._errors = [];
       this.contentType(CONTENT_TYPE_JSON);
    },
 
@@ -66,24 +68,29 @@ module.exports = Class.extend({
       return this.body('Found. Redirecting to ' + url);
    },
 
+   addError: function(e) {
+      this._errors.push(e);
+      return this;
+   },
+
    invalidRequest: function(body) {
       this.status(400);
-      return this.body(body || { message: 'Invalid request', status: 400 });
+      return body ? this.body(body) : this.addError(new APIError('Invalid request', undefined, 400));
    },
 
    error: function(body) {
       this.status(500);
-      return this.body(body || { message: 'Error processing request', status: 500 });
+      return body ? this.body(body) : this.addError(new APIError('Error processing request', undefined, 500));
    },
 
    serviceUnavailable: function(body) {
       this.status(503);
-      return this.body(body || { message: 'Service unavailable', status: 503 });
+      return body ? this.body(body) : this.addError(new APIError('Service unavailable', undefined, 503));
    },
 
    notFound: function(body) {
       this.status(404);
-      return this.body(body || { message: 'Not Found', status: 404 });
+      return body ? this.body(body) : this.addError(new APIError('Not found', undefined, 404));
    },
 
    rss: function(body) {
@@ -97,6 +104,7 @@ module.exports = Class.extend({
    },
 
    toResponse: function(req) {
+      this._updateBodyWithErrors();
       this._updateForJSONP(req);
       this._addCacheHeaders();
 
@@ -106,6 +114,13 @@ module.exports = Class.extend({
          body: _.isObject(this._body) ? JSON.stringify(this._body) : this._body,
       };
    },
+
+   _updateBodyWithErrors: function() {
+      if (_.isEmpty(this._body) && !_.isEmpty(this._errors)) {
+         this.body(_.invoke(this._errors, 'toJSON'));
+      }
+   },
+
 
    _addCacheHeaders: function() {
       var now = new Date(),
