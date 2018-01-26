@@ -58,11 +58,16 @@ describe('responseBuilderHandler', function() {
       };
 
       it('uses a response builder to build an error response for any error that is thrown', function(done) {
-         var cb;
+         var cb, respBody;
 
          cb = function(err, resp) {
             expect(err).to.be(undefined);
-            expect(resp).to.eql(respBuilder.error().toResponse(req));
+            expect(_.omit(resp, 'body')).to.eql(_.omit(respBuilder.serverError().rb().toResponse(req), 'body'));
+            expect(resp.body).to.be.a('string');
+            respBody = JSON.parse(resp.body);
+            expect(respBody).to.be.an('array');
+            expect(respBody.length).to.be(1);
+            expect(_.map(respBody, _.partial(_.omit, _, 'id'))).to.eql([ { title: 'Internal error', status: 500 } ]);
             done();
          };
 
@@ -75,9 +80,11 @@ describe('responseBuilderHandler', function() {
              CustomResponseBuilder, cb;
 
          CustomResponseBuilder = Class.extend({
-            error: function() {
+            serverError: function() {
                errorStub.apply(this, arguments);
-               return this;
+               return {
+                  rb: _.constant(this),
+               };
             },
             toResponse: toResponseStub,
          });

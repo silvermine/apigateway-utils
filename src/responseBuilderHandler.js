@@ -11,7 +11,7 @@ module.exports = function(promiseReturningHandlerFn, request, cb, CustomRespBuil
       })
       .catch(function(err) {
          var RB = CustomRespBuilderClass || ResponseBuilder,
-             respBuilder = new RB().error();
+             respBuilder = new RB().serverError().rb();
 
          // eslint-disable-next-line no-console
          console.log('ERROR:', err, err.stack);

@@ -4,6 +4,7 @@ var EXPORTABLE_RESOURCES;
 
 EXPORTABLE_RESOURCES = {
    Request: './Request',
+   APIError: './APIError',
    JWTSecuredRequest: './JWTSecuredRequest',
    Responsebuilder: './ResponseBuilder',
    SilvermineResponseBuilder: './SilvermineResponseBuilder',
