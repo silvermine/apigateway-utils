@@ -1,6 +1,7 @@
 'use strict';
 
-var expect = require('expect.js'),
+var _ = require('underscore'),
+    expect = require('expect.js'),
     Request = require('../src/Request'),
     ResponseBuilder = require('../src/ResponseBuilder');
 
@@ -261,7 +262,7 @@ describe('ResponseBuilder', function() {
 
       function runTest(fnName, msg, status, fnArg, expectedBody) {
          var rb = new ResponseBuilder(),
-             resp;
+             resp, respBody;
 
          resp = rb.toResponse(req);
          expect(resp.body).to.eql(JSON.stringify({}));
@@ -274,7 +275,15 @@ describe('ResponseBuilder', function() {
 
          resp = rb.toResponse(req);
          expect(resp.statusCode).to.eql(status);
-         expect(resp.body).to.eql(expectedBody || JSON.stringify({ message: msg, status: status }));
+
+         if (expectedBody) {
+            expect(resp.body).to.eql(expectedBody);
+         } else {
+            expect(resp.body).to.be.a('string');
+            respBody = JSON.parse(resp.body);
+            expect(respBody).to.be.an('array');
+            expect(_.map(respBody, _.partial(_.omit, _, 'id'))).to.eql([ { title: msg, status: status } ]);
+         }
       }
 
 
@@ -311,7 +320,7 @@ describe('ResponseBuilder', function() {
       describe('notFound', function() {
 
          it('returns the builder and sets the value correctly', function() {
-            runTest('notFound', 'Not Found', 404);
+            runTest('notFound', 'Not found', 404);
             runTest('notFound', null, 404, { foo: 'bar' }, JSON.stringify({ foo: 'bar' }));
          });
 
