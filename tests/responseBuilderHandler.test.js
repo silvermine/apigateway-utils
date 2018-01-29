@@ -5,26 +5,30 @@ var _ = require('underscore'),
     Class = require('class.extend'),
     sinon = require('sinon'),
     expect = require('expect.js'),
-    Request = require('../src/Request'),
-    ResponseBuilder = require('../src/ResponseBuilder'),
     rewire = require('rewire'),
-    handler = rewire('../src/responseBuilderHandler');
+    Request = require('../src/Request'),
+    handler = rewire('../src/responseBuilderHandler'),
+    ResponseBuilder = rewire('../src/ResponseBuilder');
 
 describe('responseBuilderHandler', function() {
    var context = { getRemainingTimeInMillis: _.noop },
-       req, respBuilder, revert;
+       req, respBuilder, revertHandler, revertRB;
 
    beforeEach(function() {
-      req = new Request({}, context);
-      respBuilder = new ResponseBuilder();
-
-      revert = handler.__set__({
+      revertHandler = handler.__set__({
          console: { log: _.noop },
       });
+      revertRB = ResponseBuilder.__set__({
+         console: { log: _.noop },
+      });
+
+      req = new Request({}, context);
+      respBuilder = new ResponseBuilder();
    });
 
    afterEach(function() {
-      revert();
+      revertHandler();
+      revertRB();
    });
 
    it('calls the function and passes the response from its return value to the callback', function(done) {
@@ -57,7 +61,7 @@ describe('responseBuilderHandler', function() {
          return def.promise;
       };
 
-      it('uses a response builder to build an error response for any error that is thrown', function(done) {
+      it('returns a proper error format for any error that is thrown in promise-returning function', function(done) {
          var cb, respBody;
 
          cb = function(err, resp) {
@@ -72,6 +76,27 @@ describe('responseBuilderHandler', function() {
          };
 
          handler(rejectWithErrorFn, req, cb);
+      });
+
+      it('returns a proper error format even when the promise-returning function throws an error directly', function(done) {
+         var fn, cb, respBody;
+
+         fn = function() {
+            throw new Error('Whoops! I did something that caused me not to even return a promise.');
+         };
+
+         cb = function(err, resp) {
+            expect(err).to.be(undefined);
+            expect(_.omit(resp, 'body')).to.eql(_.omit(respBuilder.serverError().rb().toResponse(req), 'body'));
+            expect(resp.body).to.be.a('string');
+            respBody = JSON.parse(resp.body);
+            expect(respBody).to.be.an('array');
+            expect(respBody.length).to.be(1);
+            expect(_.map(respBody, _.partial(_.omit, _, 'id'))).to.eql([ { title: 'Internal error', status: 500 } ]);
+            done();
+         };
+
+         handler(fn, req, cb);
       });
 
       it('allows a custom response builder class to be used when it creates a response for an otherwise uncaught error', function(done) {

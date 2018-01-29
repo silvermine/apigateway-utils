@@ -1,6 +1,7 @@
 'use strict';
 
-var ResponseBuilder = require('./ResponseBuilder');
+var Q = require('q'),
+    ResponseBuilder = require('./ResponseBuilder');
 
 /**
  * In our APIs, we often have errors that are several promises deep, and without this,
@@ -8,10 +9,10 @@ var ResponseBuilder = require('./ResponseBuilder');
  * This will generally make error stack traces much more helpful to us, so we are making
  * it a default.
  */
-require('q').longStackSupport = true;
+Q.longStackSupport = true;
 
 module.exports = function(promiseReturningHandlerFn, request, cb, CustomRespBuilderClass) {
-   promiseReturningHandlerFn()
+   Q.promised(promiseReturningHandlerFn)()
       .then(function(respBuilder) {
          // eslint-disable-next-line no-console
          console.log('completed with %s millis left', request.getContext().getRemainingTimeInMillis());
