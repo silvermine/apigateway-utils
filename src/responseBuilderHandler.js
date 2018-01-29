@@ -2,6 +2,14 @@
 
 var ResponseBuilder = require('./ResponseBuilder');
 
+/**
+ * In our APIs, we often have errors that are several promises deep, and without this,
+ * it's hard to tell where the error actually originated (especially with AWS calls, etc).
+ * This will generally make error stack traces much more helpful to us, so we are making
+ * it a default.
+ */
+require('q').longStackSupport = true;
+
 module.exports = function(promiseReturningHandlerFn, request, cb, CustomRespBuilderClass) {
    promiseReturningHandlerFn()
       .then(function(respBuilder) {
