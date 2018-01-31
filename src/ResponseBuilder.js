@@ -2,6 +2,7 @@
 
 var _ = require('underscore'),
     Class = require('class.extend'),
+    APIError = require('./APIError'),
     CONTENT_TYPE_JSON = 'application/json;charset=UTF-8',
     CONTENT_TYPE_JSONP = 'text/javascript;charset=UTF-8',
     CONTENT_TYPE_RSS = 'application/rss+xml',
@@ -15,11 +16,15 @@ module.exports = Class.extend({
       this._body = {};
       this._isJSONPSupported = false;
       this._cacheDurationSeconds = 0;
+      this._errors = [];
       this.contentType(CONTENT_TYPE_JSON);
    },
 
    status: function(status) {
-      this._status = status;
+      if (!_.isUndefined(status)) {
+         this._status = status;
+      }
+
       return this;
    },
 
@@ -66,24 +71,58 @@ module.exports = Class.extend({
       return this.body('Found. Redirecting to ' + url);
    },
 
-   invalidRequest: function(body) {
-      this.status(400);
-      return this.body(body || { message: 'Invalid request', status: 400 });
+   addErrors: function(errors) {
+      _.each(errors, function(err) {
+         this.addError(err);
+      }.bind(this));
+      return this;
    },
 
-   error: function(body) {
-      this.status(500);
-      return this.body(body || { message: 'Error processing request', status: 500 });
+   addError: function(err, inheritStatus) {
+      this._errors.push(err);
+      if (inheritStatus) {
+         this.status(err.status());
+      }
+      return this;
    },
 
-   serviceUnavailable: function(body) {
-      this.status(503);
-      return this.body(body || { message: 'Service unavailable', status: 503 });
+   err: function(title, detail, status, inheritStatus) {
+      var err = new APIError(title, detail, status, this);
+
+      if (inheritStatus) {
+         this.status(status);
+      }
+
+      this.addError(err);
+      return err;
    },
 
-   notFound: function(body) {
-      this.status(404);
-      return this.body(body || { message: 'Not Found', status: 404 });
+   badRequest: function(title, detail) {
+      return this.err(title || 'Invalid request', detail, 400, true);
+   },
+
+   unauthorized: function(title, detail) {
+      return this.err(title || 'Unauthorized request', detail, 401, true);
+   },
+
+   forbidden: function(title, detail) {
+      return this.err(title || 'Forbidden', detail, 403, true);
+   },
+
+   notFound: function(title, detail) {
+      return this.err(title || 'Not found', detail, 404, true);
+   },
+
+   unsupportedMediaType: function(title, detail) {
+      return this.err(title || 'Can not return requested media type', detail, 415, true);
+   },
+
+   serverError: function(title, detail) {
+      return this.err(title || 'Internal error', detail, 500, true);
+   },
+
+   notImplemented: function(title, detail) {
+      return this.err(title || 'Not implemented', detail, 501, true);
    },
 
    rss: function(body) {
@@ -97,6 +136,7 @@ module.exports = Class.extend({
    },
 
    toResponse: function(req) {
+      this._updateBodyWithErrors();
       this._updateForJSONP(req);
       this._addCacheHeaders();
 
@@ -106,6 +146,18 @@ module.exports = Class.extend({
          body: _.isObject(this._body) ? JSON.stringify(this._body) : this._body,
       };
    },
+
+   _updateBodyWithErrors: function() {
+      if (_.isEmpty(this._body) && !_.isEmpty(this._errors)) {
+         this.body(_.map(this._errors, function(err) {
+            var o = err.toResponseObject();
+
+            console.log('API response includes error: %j', o); // eslint-disable-line no-console
+            return o;
+         }));
+      }
+   },
+
 
    _addCacheHeaders: function() {
       var now = new Date(),
