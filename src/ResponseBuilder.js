@@ -138,6 +138,12 @@ module.exports = Class.extend({
    toResponse: function(req) {
       this._updateBodyWithErrors();
       this._updateForJSONP(req);
+
+      if (req.method() !== 'GET' || this._status >= 500) {
+         // Do not allow non-GET or 5xx responses to be cached.
+         this.cacheForMinutes(0);
+      }
+
       this._addCacheHeaders();
 
       return {
