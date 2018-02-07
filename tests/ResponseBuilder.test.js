@@ -8,7 +8,7 @@ var _ = require('underscore'),
     ResponseBuilder = require('../src/ResponseBuilder');
 
 describe('ResponseBuilder', function() {
-   var req = new Request({}, {}),
+   var req = new Request({ httpMethod: 'GET' }, {}),
        rb;
 
    beforeEach(function() {
@@ -182,34 +182,47 @@ describe('ResponseBuilder', function() {
 
    describe('caching functions', function() {
 
-      function runCachingTest(fnName, val, inSeconds) {
-         var resp, expected, nextSec;
+      function runCachingTest(method, fnName, val, inSeconds, respStatus) {
+         var cachingReq = new Request({ httpMethod: method }, {}),
+             resp, expected, nextSec;
 
          rb = new ResponseBuilder();
 
-         resp = rb.toResponse(req);
-         expect(resp.headers.Pragma).to.eql('no-cache');
+         resp = rb.toResponse(cachingReq);
          expect(resp.headers.Expires).to.eql('Thu, 19 Nov 1981 08:52:00 GMT');
          expect(resp.headers['Cache-Control']).to.eql('no-cache, max-age=0, must-revalidate');
-
-         expected = new Date(new Date().getTime() + (inSeconds * 1000));
-         nextSec = new Date(expected.getTime() + 1000);
+         expect(resp.headers.Pragma).to.eql('no-cache');
 
          expect(rb[fnName](val)).to.eql(rb);
-         resp = rb.toResponse(req);
 
-         expect(resp.headers.Pragma).to.eql(undefined);
-         expect(resp.headers['Cache-Control']).to.eql('must-revalidate, max-age=' + inSeconds);
-         // We test both the expected time and one second after it to allow for those test
-         // cases where the execution of the test or the code in test rolled us into the next second
-         expect([ expected.toUTCString(), nextSec.toUTCString() ]).to.contain(resp.headers.Expires);
+         if (!_.isUndefined(respStatus)) {
+            rb.status(respStatus);
+         }
+
+         resp = rb.toResponse(cachingReq);
+
+         if (inSeconds > 0) {
+            expected = new Date(new Date().getTime() + (inSeconds * 1000));
+            nextSec = new Date(expected.getTime() + 1000);
+
+            // We test both the expected time and one second after it to allow for those test
+            // cases where the execution of the test or the code in test rolled us into the next second
+            expect([ expected.toUTCString(), nextSec.toUTCString() ]).to.contain(resp.headers.Expires);
+            expect(resp.headers['Cache-Control']).to.eql('must-revalidate, max-age=' + inSeconds);
+            expect(resp.headers.Pragma).to.eql(undefined);
+         } else {
+            expect(resp.headers.Expires).to.eql('Thu, 19 Nov 1981 08:52:00 GMT');
+            expect(resp.headers['Cache-Control']).to.eql('no-cache, max-age=0, must-revalidate');
+            expect(resp.headers.Pragma).to.eql('no-cache');
+         }
+
       }
 
       describe('cacheForSeconds', function() {
 
          it('returns the builder and sets the value correctly', function() {
-            runCachingTest('cacheForSeconds', 2, 2);
-            runCachingTest('cacheForSeconds', 30, 30);
+            runCachingTest('GET', 'cacheForSeconds', 2, 2);
+            runCachingTest('GET', 'cacheForSeconds', 30, 30);
          });
 
       });
@@ -217,8 +230,8 @@ describe('ResponseBuilder', function() {
       describe('cacheForMinutes', function() {
 
          it('returns the builder and sets the value correctly', function() {
-            runCachingTest('cacheForMinutes', 2, 120);
-            runCachingTest('cacheForMinutes', 30, 1800);
+            runCachingTest('GET', 'cacheForMinutes', 2, 120);
+            runCachingTest('GET', 'cacheForMinutes', 30, 1800);
          });
 
       });
@@ -226,8 +239,27 @@ describe('ResponseBuilder', function() {
       describe('cacheForHours', function() {
 
          it('returns the builder and sets the value correctly', function() {
-            runCachingTest('cacheForHours', 1, 3600);
-            runCachingTest('cacheForHours', 2, 7200);
+            runCachingTest('GET', 'cacheForHours', 1, 3600);
+            runCachingTest('GET', 'cacheForHours', 2, 7200);
+         });
+
+      });
+
+      describe('toResponse', function() {
+
+         it('erases any caches set for non-GET requests', function() {
+            runCachingTest('POST', 'cacheForHours', 1, 0);
+            runCachingTest('PUT', 'cacheForHours', 1, 0);
+            runCachingTest('PATCH', 'cacheForHours', 1, 0);
+            runCachingTest('DELETE', 'cacheForHours', 1, 0);
+         });
+
+         it('erases any caches set for 5xx responses', function() {
+            runCachingTest('GET', 'cacheForHours', 1, 0, 500);
+            runCachingTest('POST', 'cacheForHours', 1, 0, 500);
+            runCachingTest('PUT', 'cacheForHours', 1, 0, 500);
+            runCachingTest('PATCH', 'cacheForHours', 1, 0, 500);
+            runCachingTest('DELETE', 'cacheForHours', 1, 0, 500);
          });
 
       });
