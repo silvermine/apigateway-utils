@@ -29,3 +29,8 @@ module.exports = RB.extend({
    },
 
 });
+
+module.exports.CONTENT_TYPE_JSON = RB.CONTENT_TYPE_JSON;
+module.exports.CONTENT_TYPE_JSONP = RB.CONTENT_TYPE_JSONP;
+module.exports.CONTENT_TYPE_RSS = RB.CONTENT_TYPE_RSS;
+module.exports.CONTENT_TYPE_HTML = RB.CONTENT_TYPE_HTML;
