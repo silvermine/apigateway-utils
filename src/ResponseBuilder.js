@@ -52,6 +52,10 @@ module.exports = Class.extend({
       return this;
    },
 
+   getCacheDurationInSeconds: function() {
+      return this._cacheDurationSeconds;
+   },
+
    cacheForSeconds: function(s) {
       this._cacheDurationSeconds = Math.max(0, s);
       return this;
