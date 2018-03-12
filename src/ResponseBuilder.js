@@ -139,6 +139,19 @@ module.exports = Class.extend({
       return this.body(body);
    },
 
+   okayOrNotFound: function(body, contentType) {
+      if (body) {
+         if (contentType) {
+            this.contentType(contentType);
+         }
+         this.body(body);
+      } else {
+         this.notFound();
+      }
+
+      return this;
+   },
+
    toResponse: function(req) {
       this._updateBodyWithErrors();
       this._updateForJSONP(req);
