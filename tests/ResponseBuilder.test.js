@@ -481,4 +481,36 @@ describe('ResponseBuilder', function() {
 
    });
 
+
+   describe('okayOrNotFound', function() {
+
+      function runTest(body, contentType, expectedStatusCode, expectedContentType) {
+         var resp;
+
+         resp = rb.toResponse(req);
+         expect(resp.body).to.eql(JSON.stringify({}));
+         expect(rb.okayOrNotFound(body, contentType)).to.eql(rb);
+
+         resp = rb.toResponse(req);
+         expect(resp.statusCode).to.eql(expectedStatusCode);
+         expect(rb.toResponse(req).headers['Content-Type']).to.be(expectedContentType);
+      }
+
+      it('sets the body and content type when both are provided', function() {
+         rb.contentType(ResponseBuilder.CONTENT_TYPE_XML);
+         runTest('<html />', ResponseBuilder.CONTENT_TYPE_HTML, 200, ResponseBuilder.CONTENT_TYPE_HTML);
+      });
+
+      it('only sets the body when a valid body is provided, but not a content type', function() {
+         rb.contentType(ResponseBuilder.CONTENT_TYPE_JSON);
+         runTest({ test: 'data' }, undefined, 200, ResponseBuilder.CONTENT_TYPE_JSON);
+      });
+
+      it('configures the response for "not found" when no body was given', function() {
+         rb.contentType(ResponseBuilder.CONTENT_TYPE_XML);
+         runTest(undefined, ResponseBuilder.CONTENT_TYPE_JSON, 404, ResponseBuilder.CONTENT_TYPE_XML);
+      });
+
+   });
+
 });
