@@ -3,10 +3,7 @@
 var _ = require('underscore'),
     Class = require('class.extend'),
     APIError = require('./APIError'),
-    CONTENT_TYPE_JSON = 'application/json;charset=UTF-8',
-    CONTENT_TYPE_JSONP = 'text/javascript;charset=UTF-8',
-    CONTENT_TYPE_RSS = 'application/rss+xml',
-    CONTENT_TYPE_HTML = 'text/html;charset=UTF-8';
+    CONTENT_TYPES = require('./contentTypes');
 
 module.exports = Class.extend({
 
@@ -17,7 +14,7 @@ module.exports = Class.extend({
       this._isJSONPSupported = false;
       this._cacheDurationSeconds = 0;
       this._errors = [];
-      this.contentType(CONTENT_TYPE_JSON);
+      this.contentType(CONTENT_TYPES.CONTENT_TYPE_JSON);
    },
 
    status: function(status) {
@@ -126,12 +123,12 @@ module.exports = Class.extend({
    },
 
    rss: function(body) {
-      this.contentType(CONTENT_TYPE_RSS);
+      this.contentType(CONTENT_TYPES.CONTENT_TYPE_RSS);
       return this.body(body);
    },
 
    html: function(body) {
-      this.contentType(CONTENT_TYPE_HTML);
+      this.contentType(CONTENT_TYPES.CONTENT_TYPE_HTML);
       return this.body(body);
    },
 
@@ -190,7 +187,7 @@ module.exports = Class.extend({
       if (req.hasQueryParam(this._jsonpQueryParamName) && this._isValidJSONPCallback(req.query(this._jsonpQueryParamName))) {
          callback = req.query(this._jsonpQueryParamName);
 
-         this.contentType(CONTENT_TYPE_JSONP);
+         this.contentType(CONTENT_TYPES.CONTENT_TYPE_JSONP);
          this._body = 'typeof ' + callback + ' === \'function\' && ' + callback + '(' + JSON.stringify(this._body) + ');';
       }
    },
@@ -201,7 +198,4 @@ module.exports = Class.extend({
 
 });
 
-module.exports.CONTENT_TYPE_JSON = CONTENT_TYPE_JSON;
-module.exports.CONTENT_TYPE_JSONP = CONTENT_TYPE_JSONP;
-module.exports.CONTENT_TYPE_RSS = CONTENT_TYPE_RSS;
-module.exports.CONTENT_TYPE_HTML = CONTENT_TYPE_HTML;
+_.extend(module.exports, CONTENT_TYPES);

@@ -1,6 +1,8 @@
 'use strict';
 
-var RB = require('./ResponseBuilder');
+var _ = require('underscore'),
+    RB = require('./ResponseBuilder'),
+    CONTENT_TYPES = require('./contentTypes');
 
 module.exports = RB.extend({
 
@@ -29,3 +31,5 @@ module.exports = RB.extend({
    },
 
 });
+
+_.extend(module.exports, CONTENT_TYPES);
