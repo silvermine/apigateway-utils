@@ -305,6 +305,7 @@ describe('ResponseBuilder', function() {
          { name: 'unsupportedMediaType', title: 'Can not return requested media type', statusCode: 415 },
          { name: 'serverError', title: 'Internal error', statusCode: 500 },
          { name: 'notImplemented', title: 'Not implemented', statusCode: 501 },
+         { name: 'serviceUnavailable', title: 'Service unavailable', statusCode: 503 },
       ];
 
       _.each(errorFunctions, function(ef) {

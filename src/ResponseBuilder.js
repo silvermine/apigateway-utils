@@ -125,6 +125,10 @@ module.exports = Class.extend({
       return this.err(title || 'Not implemented', detail, 501, true);
    },
 
+   serviceUnavailable: function(title, detail) {
+      return this.err(title || 'Service unavailable', detail, 503, true);
+   },
+
    rss: function(body) {
       this.contentType(CONTENT_TYPE_RSS);
       return this.body(body);
