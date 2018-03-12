@@ -245,6 +245,25 @@ describe('ResponseBuilder', function() {
 
       });
 
+      describe('getCacheDurationInSeconds', function() {
+
+         it('returns the correct caching duration when set using seconds', function() {
+            rb.cacheForSeconds(25);
+            expect(rb.getCacheDurationInSeconds()).to.eql(25);
+         });
+
+         it('returns the correct caching duration when set using minutes', function() {
+            rb.cacheForMinutes(2);
+            expect(rb.getCacheDurationInSeconds()).to.eql(120);
+         });
+
+         it('returns the correct caching duration when set using hours', function() {
+            rb.cacheForHours(3);
+            expect(rb.getCacheDurationInSeconds()).to.eql(10800);
+         });
+
+      });
+
       describe('toResponse', function() {
 
          it('erases any caches set for non-GET requests', function() {
