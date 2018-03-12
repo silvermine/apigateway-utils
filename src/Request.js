@@ -1,17 +1,36 @@
 'use strict';
 
 var _ = require('underscore'),
-    Class = require('class.extend');
+    Class = require('class.extend'),
+    DEFAULT_OPTS;
+
+DEFAULT_OPTS = {
+   logRequest: true,
+};
 
 module.exports = Class.extend({
 
-   init: function(evt, context) {
+   init: function(evt, context, opts) {
       this._started = new Date().getTime();
       this._event = evt;
       this._context = context;
       this._query = this._event.queryStringParameters || {};
       this._pathParams = this._event.pathParameters || {};
       this._headers = this._event.headers || {};
+      this._opts = _.extend({}, DEFAULT_OPTS, opts);
+
+      if (this._opts.logRequest) {
+         this.logRequest(_.extend({
+            event: 'api-request',
+            path: evt.path,
+            queryParams: this._query,
+         }, this._opts.additionalRequestLoggingData));
+      }
+   },
+
+   logRequest: function(reqObj) {
+      // eslint-disable-next-line no-console
+      console.log(JSON.stringify(reqObj));
    },
 
    _parseBody: function() {

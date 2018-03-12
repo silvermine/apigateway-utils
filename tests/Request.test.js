@@ -1,6 +1,7 @@
 'use strict';
 
 var Q = require('q'),
+    sinon = require('sinon'),
     expect = require('expect.js'),
     Request = require('../src/Request');
 
@@ -385,6 +386,53 @@ describe('Request', function() {
 
       it('returns null when the body is not valid JSON', function() {
          runTest({ body: '{foo:bar}', headers: { 'content-type': 'application/json' } }, null);
+      });
+
+   });
+
+
+   describe('request logging', function() {
+      var logRequestStub;
+
+      beforeEach(function() {
+         logRequestStub = sinon.stub(Request.prototype, 'logRequest');
+      });
+
+      afterEach(function() {
+         logRequestStub.restore();
+      });
+
+      it('logs the request on initial creation', function() {
+         // eslint-disable-next-line no-new
+         new Request({ path: '/path', queryStringParameters: { key: 'value' } });
+         sinon.assert.calledOnce(logRequestStub);
+         sinon.assert.calledWith(logRequestStub, {
+            event: 'api-request',
+            path: '/path',
+            queryParams: { key: 'value' },
+         });
+      });
+
+      it('doesn\'t logs the request when request logging is disabled', function() {
+         // eslint-disable-next-line no-new
+         new Request({ path: '/path', queryStringParameters: { key: 'value' } }, undefined, { logRequest: false });
+         sinon.assert.notCalled(logRequestStub);
+      });
+
+      it('logs additional data when provided', function() {
+         // eslint-disable-next-line no-new
+         new Request({ path: '/path', queryStringParameters: { key: 'value' } }, undefined, {
+            additionalRequestLoggingData: {
+               xrayTraceID: 'trace-id',
+            },
+         });
+         sinon.assert.calledOnce(logRequestStub);
+         sinon.assert.calledWith(logRequestStub, {
+            event: 'api-request',
+            path: '/path',
+            queryParams: { key: 'value' },
+            xrayTraceID: 'trace-id',
+         });
       });
 
    });
