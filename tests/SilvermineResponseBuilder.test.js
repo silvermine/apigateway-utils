@@ -63,4 +63,11 @@ describe('SilvermineResponseBuilder', function() {
       });
    });
 
+   it('exposes the content type constants', function() {
+      expect(ResponseBuilder.CONTENT_TYPE_JSON).to.be('application/json;charset=UTF-8');
+      expect(ResponseBuilder.CONTENT_TYPE_JSONP).to.be('text/javascript;charset=UTF-8');
+      expect(ResponseBuilder.CONTENT_TYPE_RSS).to.be('application/rss+xml');
+      expect(ResponseBuilder.CONTENT_TYPE_HTML).to.be('text/html;charset=UTF-8');
+   });
+
 });
