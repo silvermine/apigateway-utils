@@ -52,6 +52,10 @@ module.exports = Class.extend({
       return this;
    },
 
+   getCacheDurationInSeconds: function() {
+      return this._cacheDurationSeconds;
+   },
+
    cacheForSeconds: function(s) {
       this._cacheDurationSeconds = Math.max(0, s);
       return this;
@@ -125,6 +129,10 @@ module.exports = Class.extend({
       return this.err(title || 'Not implemented', detail, 501, true);
    },
 
+   serviceUnavailable: function(title, detail) {
+      return this.err(title || 'Service unavailable', detail, 503, true);
+   },
+
    rss: function(body) {
       this.contentType(CONTENT_TYPE_RSS);
       return this.body(body);
@@ -133,6 +141,19 @@ module.exports = Class.extend({
    html: function(body) {
       this.contentType(CONTENT_TYPE_HTML);
       return this.body(body);
+   },
+
+   okayOrNotFound: function(body, contentType) {
+      if (body) {
+         if (contentType) {
+            this.contentType(contentType);
+         }
+         this.body(body);
+      } else {
+         this.notFound();
+      }
+
+      return this;
    },
 
    toResponse: function(req) {

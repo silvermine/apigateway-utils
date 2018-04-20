@@ -245,6 +245,25 @@ describe('ResponseBuilder', function() {
 
       });
 
+      describe('getCacheDurationInSeconds', function() {
+
+         it('returns the correct caching duration when set using seconds', function() {
+            rb.cacheForSeconds(25);
+            expect(rb.getCacheDurationInSeconds()).to.eql(25);
+         });
+
+         it('returns the correct caching duration when set using minutes', function() {
+            rb.cacheForMinutes(2);
+            expect(rb.getCacheDurationInSeconds()).to.eql(120);
+         });
+
+         it('returns the correct caching duration when set using hours', function() {
+            rb.cacheForHours(3);
+            expect(rb.getCacheDurationInSeconds()).to.eql(10800);
+         });
+
+      });
+
       describe('toResponse', function() {
 
          it('erases any caches set for non-GET requests', function() {
@@ -305,6 +324,7 @@ describe('ResponseBuilder', function() {
          { name: 'unsupportedMediaType', title: 'Can not return requested media type', statusCode: 415 },
          { name: 'serverError', title: 'Internal error', statusCode: 500 },
          { name: 'notImplemented', title: 'Not implemented', statusCode: 501 },
+         { name: 'serviceUnavailable', title: 'Service unavailable', statusCode: 503 },
       ];
 
       _.each(errorFunctions, function(ef) {
@@ -476,6 +496,53 @@ describe('ResponseBuilder', function() {
             runTest('html', '<html />', ResponseBuilder.CONTENT_TYPE_HTML);
          });
 
+      });
+
+   });
+
+
+   describe('okayOrNotFound', function() {
+
+      function runTest(body, contentType, expectedStatusCode, expectedContentType, expectedBody) {
+         var resp;
+
+         resp = rb.toResponse(req);
+         expect(resp.body).to.eql(JSON.stringify({}));
+         expect(rb.okayOrNotFound(body, contentType)).to.eql(rb);
+
+         resp = rb.toResponse(req);
+         expect(resp.statusCode).to.eql(expectedStatusCode);
+         expect(rb.toResponse(req).headers['Content-Type']).to.be(expectedContentType);
+         expect(resp.body).to.eql(expectedBody);
+      }
+
+      it('sets the body and content type when both are provided', function() {
+         var body = '<html />';
+
+         rb.contentType(ResponseBuilder.CONTENT_TYPE_XML);
+         runTest(body, ResponseBuilder.CONTENT_TYPE_HTML, 200, ResponseBuilder.CONTENT_TYPE_HTML, body);
+      });
+
+      it('only sets the body when a valid body is provided, but not a content type', function() {
+         var body = { test: 'data' };
+
+         rb.contentType(ResponseBuilder.CONTENT_TYPE_JSON);
+         runTest(body, undefined, 200, ResponseBuilder.CONTENT_TYPE_JSON, JSON.stringify(body));
+      });
+
+      it('configures the response for "not found" when no body was given', function() {
+         var resp;
+
+         rb.contentType(ResponseBuilder.CONTENT_TYPE_XML);
+
+         resp = rb.toResponse(req);
+         expect(resp.body).to.eql(JSON.stringify({}));
+         expect(rb.okayOrNotFound(undefined, ResponseBuilder.CONTENT_TYPE_HTML)).to.eql(rb);
+
+         resp = rb.toResponse(req);
+         expect(resp.statusCode).to.eql(404);
+         expect(rb.toResponse(req).headers['Content-Type']).to.be(ResponseBuilder.CONTENT_TYPE_XML);
+         expect(resp.body).to.be.a('string');
       });
 
    });
