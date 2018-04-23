@@ -6,7 +6,7 @@ EXPORTABLE_RESOURCES = {
    Request: './Request',
    APIError: './APIError',
    JWTSecuredRequest: './JWTSecuredRequest',
-   Responsebuilder: './ResponseBuilder',
+   ResponseBuilder: './ResponseBuilder',
    SilvermineResponseBuilder: './SilvermineResponseBuilder',
    responseBuilderHandler: './responseBuilderHandler',
    JWTValidator: './JWTValidator',
