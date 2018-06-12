@@ -59,6 +59,15 @@ describe('ResponseBuilder', function() {
 
    });
 
+   describe('getBody', function() {
+
+      it('returns the body that was set', function() {
+         expect(rb.body({ foo: 'bar' })).to.eql(rb);
+         expect(rb.getBody()).to.eql({ foo: 'bar' });
+      });
+
+   });
+
 
    describe('contentType', function() {
 

@@ -35,6 +35,10 @@ module.exports = Class.extend({
       return this;
    },
 
+   getBody: function() {
+      return this._body;
+   },
+
    contentType: function(type) {
       return this.header('Content-Type', type);
    },
