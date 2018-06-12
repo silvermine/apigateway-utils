@@ -123,7 +123,8 @@ describe('ResponseBuilder', function() {
          // default to no JSONP
          expect(rb.toResponse(jsonpReq).body).to.eql(JSON.stringify(body));
 
-         // enabling support with the name of the query param that is not present in the request
+         // enabling support with the name of the query param that is not present in the
+         // request
          expect(rb.supportJSONP('nonexistentCB')).to.eql(rb);
 
          // so the body is just JSON, not JSONP
@@ -138,7 +139,8 @@ describe('ResponseBuilder', function() {
          // default to no JSONP
          expect(rb.toResponse(jsonpReq).body).to.eql(JSON.stringify(body));
 
-         // enabling support with the name of the query param that has an invalid callback value
+         // enabling support with the name of the query param that has an invalid callback
+         // value
          expect(rb.supportJSONP('badCB')).to.eql(rb);
 
          // so the body is just JSON, not JSONP
@@ -205,8 +207,9 @@ describe('ResponseBuilder', function() {
             expected = new Date(new Date().getTime() + (inSeconds * 1000));
             nextSec = new Date(expected.getTime() + 1000);
 
-            // We test both the expected time and one second after it to allow for those test
-            // cases where the execution of the test or the code in test rolled us into the next second
+            // We test both the expected time and one second after it to allow for those
+            // test cases where the execution of the test or the code in test rolled us
+            // into the next second
             expect([ expected.toUTCString(), nextSec.toUTCString() ]).to.contain(resp.headers.Expires);
             expect(resp.headers['Cache-Control']).to.eql('must-revalidate, max-age=' + inSeconds);
             expect(resp.headers.Pragma).to.eql(undefined);
