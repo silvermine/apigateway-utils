@@ -21,7 +21,8 @@ describe('SilvermineResponseBuilder', function() {
          expect(resp.headers.Pragma).to.eql(undefined);
          expect(resp.headers['Cache-Control']).to.eql('must-revalidate, max-age=' + (minutes * 60));
          // We test both the expected time and one second after it to allow for those test
-         // cases where the execution of the test or the code in test rolled us into the next second
+         // cases where the execution of the test or the code in test rolled us into the
+         // next second
          expect([ expectedExpiry.toUTCString(), expiryNextSec.toUTCString() ]).to.contain(resp.headers.Expires);
       } else {
          expect(resp.headers.Expires).to.eql('Thu, 19 Nov 1981 08:52:00 GMT');

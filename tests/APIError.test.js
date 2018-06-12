@@ -59,12 +59,14 @@ describe('APIError', function() {
       it('adds a source object', function() {
          expect(err._sources).to.eql([]);
          err.addSource('l', 'p', 'd', 's');
-         expect(err._sources).to.eql([ {
-            location: 'l',
-            path: 'p',
-            detail: 'd',
-            schemaPath: 's',
-         } ]);
+         expect(err._sources).to.eql([
+            {
+               location: 'l',
+               path: 'p',
+               detail: 'd',
+               schemaPath: 's',
+            },
+         ]);
       });
    });
 
@@ -99,12 +101,14 @@ describe('APIError', function() {
             title: 'title',
             detail: 'detail',
             status: 999,
-            sources: [ {
-               location: 'l',
-               path: 'p',
-               detail: 'd',
-               schemaPath: 's',
-            } ],
+            sources: [
+               {
+                  location: 'l',
+                  path: 'p',
+                  detail: 'd',
+                  schemaPath: 's',
+               },
+            ],
          });
       });
    });
