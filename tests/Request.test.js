@@ -355,13 +355,20 @@ describe('Request', function() {
    describe('_parseBody and parsedBody', function() {
       var body = { foo: 'bar' };
 
-      function runTest(evt, expectedOutput) {
+      function runTest(evt, expectedOutput, throwError) {
          var req = new Request(evt);
 
-         expect(req._parseBody()).to.eql(expectedOutput);
-         expect(req.parsedBody()).to.eql(expectedOutput);
-         // call it a second time to test the implicit `else`
-         expect(req.parsedBody()).to.eql(expectedOutput);
+         if (throwError) {
+            expect(req._parseBody.bind(req, throwError)).to.throwError();
+            expect(req.parsedBody.bind(req, throwError)).to.throwError();
+            // call it a second time to test the implicit `else`
+            expect(req.parsedBody.bind(req, throwError)).to.throwError();
+         } else {
+            expect(req._parseBody(throwError)).to.eql(expectedOutput);
+            expect(req.parsedBody(throwError)).to.eql(expectedOutput);
+            // call it a second time to test the implicit `else`
+            expect(req.parsedBody(throwError)).to.eql(expectedOutput);
+         }
       }
 
       it('parses a JSON body correctly', function() {
@@ -382,6 +389,10 @@ describe('Request', function() {
 
       it('returns null when there is a non-JSON content type', function() {
          runTest({ body: JSON.stringify(body), headers: { 'content-type': 'foo/bar' } }, null);
+      });
+
+      it('throws an error when there is unparseable content and user wants the error back', function() {
+         runTest({ body: '{{..}}', headers: { 'content-type': 'application/json' } }, null, true);
       });
 
       it('returns null when the body is not valid JSON', function() {
