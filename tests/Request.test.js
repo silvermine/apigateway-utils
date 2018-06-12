@@ -188,6 +188,29 @@ describe('Request', function() {
    });
 
 
+   describe('renamePathParam', function() {
+
+      it('renames the param, not leaving the other one behind', function() {
+         var req = new Request({ pathParameters: { foo: 'abc', bar: 'def' } });
+
+         expect(req.hasPathParam('foo')).to.be(true);
+         expect(req.pathParam('foo')).to.eql('abc');
+         expect(req.hasPathParam('bar')).to.be(true);
+         expect(req.pathParam('bar')).to.eql('def');
+         expect(req.hasPathParam('baz')).to.be(false);
+
+         req.renamePathParam('bar', 'baz');
+
+         expect(req.hasPathParam('foo')).to.be(true);
+         expect(req.pathParam('foo')).to.eql('abc');
+         expect(req.hasPathParam('bar')).to.be(false);
+         expect(req.hasPathParam('baz')).to.be(true);
+         expect(req.pathParam('baz')).to.eql('def');
+      });
+
+   });
+
+
    describe('hasQueryParam', function() {
 
       it('returns correct values', function() {

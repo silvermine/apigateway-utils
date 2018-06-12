@@ -102,6 +102,15 @@ module.exports = Class.extend({
       return !_.isUndefined(this.pathParam(k));
    },
 
+   renamePathParam: function(from, to) {
+      // This is helpful in a scenario where you have two different types of operations
+      // that use a path param at the same location in the URL, so APIGW only allows you
+      // to use a single name for the param, but in the code it would make more sense if
+      // the param were named something different.
+      this._pathParams[to] = this._pathParams[from];
+      delete this._pathParams[from];
+   },
+
    pathParam: function(k) {
       return this._pathParams[k];
    },
