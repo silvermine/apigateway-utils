@@ -334,6 +334,7 @@ describe('ResponseBuilder', function() {
          { name: 'forbidden', title: 'Forbidden', statusCode: 403 },
          { name: 'notFound', title: 'Not found', statusCode: 404 },
          { name: 'unsupportedMediaType', title: 'Can not return requested media type', statusCode: 415 },
+         { name: 'unprocessableEntity', title: 'Unprocessable entity', statusCode: 422 },
          { name: 'serverError', title: 'Internal error', statusCode: 500 },
          { name: 'notImplemented', title: 'Not implemented', statusCode: 501 },
          { name: 'serviceUnavailable', title: 'Service unavailable', statusCode: 503 },

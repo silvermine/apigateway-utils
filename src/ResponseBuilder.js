@@ -122,6 +122,10 @@ module.exports = Class.extend({
       return this.err(title || 'Can not return requested media type', detail, 415, true);
    },
 
+   unprocessableEntity: function(title, detail) {
+      return this.err(title || 'Unprocessable entity', detail, 422, true);
+   },
+
    serverError: function(title, detail) {
       return this.err(title || 'Internal error', detail, 500, true);
    },
