@@ -33,11 +33,16 @@ module.exports = Class.extend({
       console.log(JSON.stringify(reqObj));
    },
 
-   _parseBody: function() {
+   _parseBody: function(throwError) {
+      // By default we just squash any errors while parsing the body, but if the user
+      // wants an error to be thrown, they can pass a flag to indicate this.
       if (this.header('Content-Type') === 'application/json') {
          try {
             return JSON.parse(this._event.body);
          } catch(err) {
+            if (throwError) {
+               throw err;
+            }
             return null;
          }
       }
@@ -117,9 +122,9 @@ module.exports = Class.extend({
       return this._event.body;
    },
 
-   parsedBody: function() {
+   parsedBody: function(throwError) {
       if (_.isUndefined(this._parsedBody)) {
-         this._parsedBody = this._parseBody();
+         this._parsedBody = this._parseBody(throwError);
       }
 
       return this._parsedBody;
