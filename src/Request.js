@@ -36,7 +36,7 @@ module.exports = Class.extend({
    _parseBody: function(throwError) {
       // By default we just squash any errors while parsing the body, but if the user
       // wants an error to be thrown, they can pass a flag to indicate this.
-      if (this.header('Content-Type') === 'application/json') {
+      if (this._getContentTypeEssence() === 'application/json') {
          try {
             return JSON.parse(this._event.body);
          } catch(err) {
@@ -48,6 +48,20 @@ module.exports = Class.extend({
       }
 
       return null;
+   },
+
+   /**
+    * Returns the type and subtype, e.g. 'application/json', of the MIME type found in the
+    * Content-Type header.
+    *
+    * @see https://mimesniff.spec.whatwg.org/#mime-type-essence
+    * @return {string} The essence of the MIME or `undefined` if the Content-Type header
+    * is not found
+    */
+   _getContentTypeEssence: function() {
+      var contentType = this.header('Content-Type');
+
+      return _.isString(contentType) ? contentType.replace(/;.*/, '').trim().toLowerCase() : undefined;
    },
 
    getEvent: function() {
