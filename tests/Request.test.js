@@ -398,6 +398,10 @@ describe('Request', function() {
          runTest({ body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } }, body);
       });
 
+      it('parses a JSON body correctly when a charset is included in the Content-Type', function() {
+         runTest({ body: JSON.stringify(body), headers: { 'Content-Type': 'application/json; charset=UTF-8' } }, body);
+      });
+
       it('returns null when there are no headers', function() {
          runTest({ body: JSON.stringify(body) }, null);
       });
@@ -420,6 +424,47 @@ describe('Request', function() {
 
       it('returns null when the body is not valid JSON', function() {
          runTest({ body: '{foo:bar}', headers: { 'content-type': 'application/json' } }, null);
+      });
+
+   });
+
+
+   describe('_getContentTypeEssence', function() {
+
+      function runTest(contentType, expectedOutput) {
+         var req = new Request({ headers: { 'Content-Type': contentType } });
+
+         expect(req._getContentTypeEssence()).to.be(expectedOutput);
+      }
+
+      it('returns undefined when Content-Type header is missing', function() {
+         var req = new Request({ headers: {} });
+
+         expect(req._getContentTypeEssence()).to.be(undefined);
+      });
+
+      it('handles an empty Content-Type header', function() {
+         runTest('', '');
+      });
+
+      it('parses a basic JSON MIME type', function() {
+         runTest('application/json', 'application/json');
+      });
+
+      it('parses a JSON MIME type with charset', function() {
+         runTest('application/json; charset=UTF-8', 'application/json');
+      });
+
+      it('parses a MIME type with funky spacing', function() {
+         runTest(' application/json   ; charset=UTF-8 ', 'application/json');
+      });
+
+      it('lowercases a MIME type with mixed case', function() {
+         runTest('Application/JSON', 'application/json');
+      });
+
+      it('parses a MIME type with extra parameters', function() {
+         runTest('text/html;charset=ascii;extra=stuff', 'text/html');
       });
 
    });
