@@ -6,8 +6,8 @@ var _ = require('underscore'),
 
 module.exports = Request.extend({
 
-   init: function(evt, context) {
-      this._super(evt, context);
+   init: function(evt, context, opts) {
+      this._super(evt, context, opts);
       this._token = false;
    },
 
