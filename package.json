@@ -47,5 +47,8 @@
     "sinon": "1.17.7",
     "underscore": "1.8.3",
     "uuid": "3.2.1"
+  },
+  "dependencies": {
+    "http-status-codes": "1.3.0"
   }
 }

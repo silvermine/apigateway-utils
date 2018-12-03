@@ -1,6 +1,7 @@
 'use strict';
 
 var _ = require('underscore'),
+    codes = require('http-status-codes'),
     Class = require('class.extend'),
     APIError = require('./APIError'),
     CONTENT_TYPES = require('./contentTypes');
@@ -162,6 +163,8 @@ module.exports = Class.extend({
    },
 
    toResponse: function(req) {
+      var resp;
+
       this._updateBodyWithErrors();
       this._updateForJSONP(req);
 
@@ -172,11 +175,28 @@ module.exports = Class.extend({
 
       this._addCacheHeaders();
 
-      return {
+      resp = {
          statusCode: this._status,
          headers: this._headers,
          body: _.isObject(this._body) ? JSON.stringify(this._body) : this._body,
       };
+
+      if (req.getEvent() && req.getEvent().requestContext && req.getEvent().requestContext.elb) {
+         // If you're running your Lambda behind Application Load Balancer, the ELB/ALB
+         // requires the statusDescription and isBase64Encoded fields. Right now this
+         // library does not support base64 encoded responses, so we just set this to
+         // false and try to get you the right status description.
+         resp.statusDescription = codes.getStatusText(resp.statusCode);
+         resp.isBase64Encoded = false;
+
+         // And ELB requires that all header values be strings already, whereas with APIGW
+         // you can have booleans / integers as header values.
+         resp.headers = _.mapObject(resp.headers, function(val) {
+            return String(val);
+         });
+      }
+
+      return resp;
    },
 
    _updateBodyWithErrors: function() {
