@@ -1,6 +1,7 @@
 'use strict';
 
 var _ = require('underscore'),
+    log = console.log.bind(console), // eslint-disable-line no-console
     codes = require('http-status-codes'),
     Class = require('class.extend'),
     APIError = require('./APIError'),
@@ -204,7 +205,7 @@ module.exports = Class.extend({
          this.body(_.map(this._errors, function(err) {
             var o = err.toResponseObject();
 
-            console.log('API response includes error: %j', o); // eslint-disable-line no-console
+            log('API response includes error: %j', o);
             return o;
          }));
       }

@@ -16,10 +16,10 @@ describe('responseBuilderHandler', function() {
 
    beforeEach(function() {
       revertHandler = handler.__set__({
-         console: { log: _.noop },
+         log: _.noop,
       });
       revertRB = ResponseBuilder.__set__({
-         console: { log: _.noop },
+         log: _.noop,
       });
 
       req = new Request({}, context);
