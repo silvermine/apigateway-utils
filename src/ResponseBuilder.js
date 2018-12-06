@@ -187,7 +187,7 @@ module.exports = Class.extend({
          // requires the statusDescription and isBase64Encoded fields. Right now this
          // library does not support base64 encoded responses, so we just set this to
          // false and try to get you the right status description.
-         resp.statusDescription = codes.getStatusText(resp.statusCode);
+         resp.statusDescription = resp.statusCode + ' ' + codes.getStatusText(resp.statusCode);
          resp.isBase64Encoded = false;
 
          // And ELB requires that all header values be strings already, whereas with APIGW
