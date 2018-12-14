@@ -1,9 +1,9 @@
 # Silvermine API Gateway Utilities
 
-[![Build Status](https://travis-ci.org/silvermine/apigateway-utils.png?branch=master)](https://travis-ci.org/silvermine/apigateway-utils)
+[![Build Status](https://travis-ci.org/silvermine/apigateway-utils.svg?branch=master)](https://travis-ci.org/silvermine/apigateway-utils)
 [![Coverage Status](https://coveralls.io/repos/github/silvermine/apigateway-utils/badge.svg?branch=master)](https://coveralls.io/github/silvermine/apigateway-utils?branch=master)
-[![Dependency Status](https://david-dm.org/silvermine/apigateway-utils.png)](https://david-dm.org/silvermine/apigateway-utils)
-[![Dev Dependency Status](https://david-dm.org/silvermine/apigateway-utils/dev-status.png)](https://david-dm.org/silvermine/apigateway-utils#info=devDependencies&view=table)
+[![Dependency Status](https://david-dm.org/silvermine/apigateway-utils.svg)](https://david-dm.org/silvermine/apigateway-utils)
+[![Dev Dependency Status](https://david-dm.org/silvermine/apigateway-utils/dev-status.svg)](https://david-dm.org/silvermine/apigateway-utils#info=devDependencies&view=table)
 
 
 ## What is it?
