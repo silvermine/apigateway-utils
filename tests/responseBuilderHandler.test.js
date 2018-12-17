@@ -12,23 +12,11 @@ var _ = require('underscore'),
 
 describe('responseBuilderHandler', function() {
    var context = { getRemainingTimeInMillis: _.noop },
-       req, respBuilder, revertHandler, revertRB;
+       req, respBuilder;
 
    beforeEach(function() {
-      revertHandler = handler.__set__({
-         log: _.noop,
-      });
-      revertRB = ResponseBuilder.__set__({
-         log: _.noop,
-      });
-
       req = new Request({}, context);
       respBuilder = new ResponseBuilder();
-   });
-
-   afterEach(function() {
-      revertHandler();
-      revertRB();
    });
 
    it('calls the function and passes the response from its return value to the callback', function(done) {

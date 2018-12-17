@@ -1,8 +1,7 @@
 'use strict';
 
 var Q = require('q'),
-    ResponseBuilder = require('./ResponseBuilder'),
-    log = console.log.bind(console); // eslint-disable-line no-console
+    ResponseBuilder = require('./ResponseBuilder');
 
 /**
  * In our APIs, we often have errors that are several promises deep, and without this,
@@ -15,14 +14,16 @@ Q.longStackSupport = true;
 module.exports = function(promiseReturningHandlerFn, request, cb, CustomRespBuilderClass) {
    Q.promised(promiseReturningHandlerFn)()
       .then(function(respBuilder) {
-         log('completed with %s millis left', request.getContext().getRemainingTimeInMillis());
+         // eslint-disable-next-line no-console
+         console.log('completed with %s millis left', request.getContext().getRemainingTimeInMillis());
          cb(undefined, respBuilder.toResponse(request));
       })
       .catch(function(err) {
          var RB = CustomRespBuilderClass || ResponseBuilder,
              respBuilder = new RB().serverError().rb();
 
-         log('ERROR:', err, err.stack);
+         // eslint-disable-next-line no-console
+         console.log('ERROR:', err, err.stack);
          cb(undefined, respBuilder.toResponse(request));
       })
       .done();
