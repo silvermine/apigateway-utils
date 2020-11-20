@@ -1,12 +1,20 @@
 'use strict';
 
+var markdownlint = require('markdownlint');
+
 module.exports = function(grunt) {
 
    var config;
 
    config = {
       js: {
-         all: [ 'Gruntfile.js', '**/*.js', '!**/node_modules/**/*', '!**/coverage/**/*' ],
+         all: [
+            'Gruntfile.js',
+            '**/*.js',
+            '!**/node_modules/**/*',
+            '!**/tests/**/*',
+            '!**/coverage/**/*',
+         ],
       },
    };
 
@@ -18,11 +26,23 @@ module.exports = function(grunt) {
          target: config.js.all,
       },
 
+      markdownlint: {
+         all: {
+            // Adjust `src` depending on how many files need to be linted:
+            src: [ 'README.md' ],
+            options: {
+               // eslint-disable-next-line no-sync
+               config: markdownlint.readConfigSync('.markdownlint.json'),
+            },
+         },
+      },
+
    });
 
    grunt.loadNpmTasks('grunt-eslint');
+   grunt.loadNpmTasks('grunt-markdownlint');
 
-   grunt.registerTask('standards', [ 'eslint' ]);
+   grunt.registerTask('standards', [ 'eslint', 'markdownlint' ]);
    grunt.registerTask('default', [ 'standards' ]);
 
 };
