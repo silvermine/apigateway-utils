@@ -42,7 +42,7 @@
     "grunt": "1.0.3",
     "grunt-eslint": "22.0.0",
     "istanbul": "0.4.5",
-    "jwt-simple": "0.5.1",
+    "jwt-simple": "0.5.3",
     "mocha": "5.2.0",
     "mocha-lcov-reporter": "1.3.0",
     "q": "1.4.1",
