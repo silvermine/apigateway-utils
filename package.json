@@ -9,7 +9,7 @@
     "check-node-version": "check-node-version --npm 8.5.5",
     "markdownlint": "markdownlint -c .markdownlint.json -i CHANGELOG.md '{,!(node_modules)/**/}*.md'",
     "eslint": "eslint .",
-    "standards": "npm run markdownlint && npm run eslint"
+    "standards": "npm run commitlint && npm run markdownlint && npm run eslint"
   },
   "author": "Jeremy Thomerson",
   "license": "MIT",
