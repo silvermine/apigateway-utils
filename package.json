@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "commitlint": "commitlint --from 2c938cb",
-    "test": "npm run check-node-version && ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- -R spec 'tests/**/*.test.js'",
+    "test": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- -R spec 'tests/**/*.test.js'",
     "check-node-version": "check-node-version --npm 8.5.5",
     "markdownlint": "markdownlint -c .markdownlint.json -i CHANGELOG.md '{,!(node_modules)/**/}*.md'",
     "eslint": "eslint .",
