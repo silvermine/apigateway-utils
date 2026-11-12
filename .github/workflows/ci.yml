@@ -14,8 +14,9 @@ jobs:
             uses: actions/setup-node@v3
             with:
                node-version-file: '.nvmrc'
-         - run: npm i -g npm@8.5.5
+         - run: npm i -g npm@11.19.1
          - run: npm ci
+         - run: npm run check-node-version
          - run: npm run standards
    test:
       needs: [ build ]
@@ -23,7 +24,7 @@ jobs:
       strategy:
          fail-fast: false
          matrix:
-            node-version: [ 12, 14, 16, 'lts/*', 'latest' ]
+            node-version: [ 14, 16, 24, 'lts/*', 'latest' ]
       steps:
          - uses: actions/checkout@v3
          -
